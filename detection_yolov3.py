@@ -47,10 +47,10 @@ class custom_dict(dict):
         return super().__setitem__(self.__key(key), value)
 
 conf = custom_dict({
-    "model_def":"yolov3/yolov3_models/yolov3-tiny.cfg",
-    "weights_path":"yolov3/yolov3_models/yolov3-tiny.weights",
+    "model_def":"yolov3/yolov3_models/yolov3.cfg",
+    "weights_path":"yolov3/yolov3_models/yolov3.weights",
     "class_path":"yolov3/yolov3_models/coco.names",
-    "conf_thres":0.01,
+    "conf_thres":0.8,
     "nms_thres":0.4,
     "img_size":416
 })
@@ -73,7 +73,7 @@ def run(img_path, conf, target_path):
     img = Image.open(img_path).convert("RGB")
     img = img.resize(((img.size[0] // 32) * 32, (img.size[1] // 32) * 32))
     img_array = np.array(img)
-    img_tensor = pad_to_square(transforms.ToTensor()(img),0)[0].unsqueeze(0)
+    img_tensor = pad_to_square(transforms.ToTensor()(img),0)[0].unsqueeze(0).to(device)
     conf.img_size = img_tensor.shape[2]
     
     with torch.no_grad():
@@ -91,7 +91,6 @@ def run(img_path, conf, target_path):
         unique_labels = detections[:, -1].cpu().unique()
         n_cls_preds = len(unique_labels)
         bbox_colors = random.sample(colors, n_cls_preds)
-        # for x1, y1, x2, y2, conf, cls_conf, cls_pred in detections:
         for x1, y1, x2, y2, cls_conf, cls_pred in detections:
 
             print("\t+ Label: %s, Conf: %.5f" % (classes[int(cls_pred)], cls_conf.item()))

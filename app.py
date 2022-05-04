@@ -5,6 +5,7 @@ import cv2
 import time
 from datetime import timedelta
 from detection_yolov3 import run, conf
+
 ALLOWED_EXTENSIONS = set([
     "png","jpg","JPG","PNG", "bmp"
 ])
@@ -23,15 +24,16 @@ def upload():
         f = request.files['file']
         if not ( f and is_allowed_file(f.filename)):
             return jsonify({
-                "error":1001, "msg":"请检查上传的图片类型，仅限于png、PNG、jpg、JPG、bmp"
+                "error": 11, 
+                "msg": f"Only {list(ALLOWED_EXTENSIONS)} are supported currently. Please check your file format."
             })
         user_input = request.form.get("name")
 
         basepath = os.path.dirname(__file__)
-        upload_path = os.path.join(basepath, "static/images",secure_filename(f.filename))
+        upload_path = os.path.join(basepath, "static/images", secure_filename(f.filename))
         f.save(upload_path)
         
-        detected_path = os.path.join(basepath, "static/images", "output" + secure_filename(f.filename))
+        detected_path = os.path.join(basepath, "static/images", "output_" + secure_filename(f.filename))
         run(upload_path, conf, detected_path)
 
         # return render_template("upload_ok.html", userinput = user_input, val1=time.time(), path = detected_path)
@@ -41,4 +43,4 @@ def upload():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=80, debug=True)
+    app.run(host='0.0.0.0', port=7100, debug=True)
