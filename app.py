@@ -5,7 +5,6 @@ import cv2
 import time
 from datetime import timedelta
 from detection_yolov3 import run, conf
-
 ALLOWED_EXTENSIONS = set([
     "png","jpg","JPG","PNG", "bmp"
 ])
@@ -18,14 +17,14 @@ app = Flask(__name__)
 # 静态文件缓存过期时间
 app.send_file_max_age_default = timedelta(seconds=1)
 
-@app.route("/upload",methods = ['POST', 'GET'])
+@app.route("/upload", methods=['POST', 'GET'])
 def upload():
     if request.method == "POST":
         f = request.files['file']
-        if not ( f and is_allowed_file(f.filename)):
+        if not ( f and is_allowed_file(f.filename) ):
             return jsonify({
-                "error": 11, 
-                "msg": f"Only {list(ALLOWED_EXTENSIONS)} are supported currently. Please check your file format."
+                "error": 1, 
+                "msg": f"Only {list(ALLOWED_EXTENSIONS)} are supported currently. Please check your file format.,"
             })
         user_input = request.form.get("name")
 
@@ -37,7 +36,7 @@ def upload():
         run(upload_path, conf, detected_path)
 
         # return render_template("upload_ok.html", userinput = user_input, val1=time.time(), path = detected_path)
-        path = "/images/" + "output" + secure_filename(f.filename)
+        path = "/images/" + "output_" + secure_filename(f.filename)
         return render_template("upload_ok.html", path = path, val1 = time.time())
     return render_template("upload.html")
 
