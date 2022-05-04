@@ -4,7 +4,8 @@ import os
 import cv2
 import time
 from datetime import timedelta
-from detection_yolov3 import run, conf
+from CVServiceModels.detection_yolov3 import run, conf
+from CVServiceModels.FasterRcnnGeneralDetection import FasterRcnnGeneralDetection
 ALLOWED_EXTENSIONS = set([
     "png","jpg","JPG","PNG", "bmp"
 ])
@@ -16,6 +17,8 @@ app = Flask(__name__)
 
 # 静态文件缓存过期时间
 app.send_file_max_age_default = timedelta(seconds=1)
+
+cv_model = FasterRcnnGeneralDetection()
 
 @app.route("/upload", methods=['POST', 'GET'])
 def upload():
@@ -33,9 +36,14 @@ def upload():
         f.save(upload_path)
         
         detected_path = os.path.join(basepath, "static/images", "output_" + secure_filename(f.filename))
-        run(upload_path, conf, detected_path)
+        # run(upload_path, conf, detected_path)
+        print(detected_path)
+        inputs = {
+            'thr': 0.70,
+            'out_file': detected_path
+        }
+        result = cv_model.run(upload_path, **inputs)
 
-        # return render_template("upload_ok.html", userinput = user_input, val1=time.time(), path = detected_path)
         path = "/images/" + "output_" + secure_filename(f.filename)
         return render_template("upload_ok.html", path = path, val1 = time.time())
     return render_template("upload.html")
